@@ -132,6 +132,7 @@ struct DietSelectionView: View {
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(isSelected ? Color.accent.opacity(0.1) : Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(isSelected ? Color.accent : Color.gray.opacity(0.2), lineWidth: 2)
