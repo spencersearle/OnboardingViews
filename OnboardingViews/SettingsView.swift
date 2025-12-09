@@ -20,12 +20,12 @@ struct SettingsView: View {
                     Image(systemName: "book.closed")
                     Text("Cookbook")
                 }
-            Color.greenText
+            Color.greenText.edgesIgnoringSafeArea(.top)
                 .tabItem {
                     Image(systemName: "sparkles")
                     Text("Discover")
                 }
-            Color.red
+            Color.red.edgesIgnoringSafeArea(.top)
                 .tabItem {
                     Image(systemName: "cart")
                     Text("Shopping List")
@@ -53,69 +53,51 @@ struct SettingsView: View {
         }
         .background(Color.primaryBackground)
     }
-    
+
+    private struct SettingsButton: View {
+        let title: String
+        let action: () -> Void
+
+        var body: some View {
+            Button(action: action) {
+                HStack {
+                    Text(title)
+                        .foregroundStyle(Color.mainText)
+                        .font(.custom("Montserrat-Medium", size: 16))
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.gray)
+                        .font(Font.system(size: 16, weight: .semibold))
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+                .frame(maxWidth: .infinity)
+                .background(Color.white)
+            }
+            .buttonStyle(PlainButtonStyle())
+        }
+    }
+
     private var threeItemList: some View {
         VStack(spacing: 5) {
-            Button {
-
-            } label: {
-                HStack {
-                    Text("Preferences")
-                        .foregroundStyle(Color.mainText)
-                        .font(.custom("Montserrat-Medium", size: 16))
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.gray)
-                        .font(Font.system(size: 16, weight: .semibold))
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
+            SettingsButton(title: "Preferences") {
+                print("Preferences")
             }
-            .buttonStyle(PlainButtonStyle())
 
             Divider()
                 .padding(.horizontal)
 
-            Button {
-
-            } label: {
-                HStack {
-                    Text("Subscription")
-                        .foregroundStyle(Color.mainText)
-                        .font(.custom("Montserrat-Medium", size: 16))
-                    
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.gray)
-                        .font(Font.system(size: 16, weight: .semibold))
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
+            SettingsButton(title: "Subscription") {
+                print("Subscription")
             }
-            .buttonStyle(PlainButtonStyle())
 
             Divider()
                 .padding(.horizontal)
 
-            Button {
-
-            } label: {
-                HStack {
-                    Text("Account")
-                        .foregroundStyle(Color.mainText)
-                        .font(.custom("Montserrat-Medium", size: 16))
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.gray)
-                        .font(Font.system(size: 16, weight: .semibold))
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
+            SettingsButton(title: "Account") {
+                print("Account")
             }
-            .buttonStyle(PlainButtonStyle())
         }
         .background(Color.white)
         .cornerRadius(15)
