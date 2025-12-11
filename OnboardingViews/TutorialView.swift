@@ -1,126 +1,202 @@
 //
 //  TutorialView.swift
-//  OnboardingViews
+//  Plaite
 //
-//  Created by Spencer Searle on 12/8/25.
+//  Created on 12/9/25.
 //
 
 import SwiftUI
 
 struct TutorialView: View {
-    @State private var selection = 0
-    @State private var hasCompletedOnboarding: Bool = false
+    @Environment(\.dismiss) var dismiss
+    @State private var currentPage = 0
+    @State private var isCompleted = false
+
+    let onTutorialCompleted: () -> Void
+
+    // Tutorial pages content
+    private let tutorialPages: [TutorialPage] = [
+        TutorialPage(
+            title: "Welcome to plaite",
+            subtitle: "Your personal cooking companion",
+            description: "Explore all the features of plaite and start your healthy recipe journey",
+            iconName: "fork.knife",
+            backgroundColor: .secondaryAccent.opacity(0.1)
+        ),
+        TutorialPage(
+            title: "Smart Recipe Discovery",
+            subtitle: "Find recipes that match your taste",
+            description: "Swipe right 👉 to add to cookbook or swipe left 👈 to keep browsing",
+            iconName: "magnifyingglass",
+            backgroundColor: .secondaryAccent.opacity(0.1)
+        ),
+        TutorialPage(
+            title: "Preview Recipes",
+            subtitle: "See how a recipe looks before cooking",
+            description: "Tap to preview recipes and get instructions before making a final decision",
+            iconName: "checkmark.circle",
+            backgroundColor: .secondaryAccent.opacity(0.1)
+        ),
+        TutorialPage(
+            title: "Save & Cook",
+            subtitle: "Build your personal cookbook",
+            description: "Save your favorite recipes and get cooking instructions tailored to your needs",
+            iconName: "heart",
+            backgroundColor: .secondaryAccent.opacity(0.1)
+        ),
+        TutorialPage(
+            title: "You're all set",
+            subtitle: "Let's start cooking",
+            description: "Discover healthy recipes and cook what you love",
+            iconName: "sparkles",
+            backgroundColor: .secondaryAccent.opacity(0.1)
+        )
+    ]
 
     var body: some View {
         ZStack {
-            Color.pink.opacity(0.5).edgesIgnoringSafeArea(.all)
-            if !hasCompletedOnboarding {
-                TabView(selection: $selection) {
-                    PageView(title: "How plaite works", subtitle: "Explore all the features of plaite and start your healthy recipe journey 🥗", buttonTitle: "Start", selection: $selection, index: 0, total: 5, hasCompletedOnboarding: $hasCompletedOnboarding)
-                        .tag(0)
-                    PageView(title: "Discover", subtitle: "Swipe right 👉 to add to cookbook or swipe left 👈 to keep browsing", buttonTitle: "Next", selection: $selection, index: 1, total: 5, hasCompletedOnboarding: $hasCompletedOnboarding)
-                        .tag(1)
-                    PageView(title: "Preview", subtitle: "Click to preview recipes before making a final decision 🤔", buttonTitle: "Next", selection: $selection, index: 2, total: 5, hasCompletedOnboarding: $hasCompletedOnboarding)
-                        .tag(2)
-                    PageView(title: "Cookbook", subtitle: "Access your chosen recipes in the cookbook 📖", buttonTitle: "Next", selection: $selection, index: 3, total: 5, hasCompletedOnboarding: $hasCompletedOnboarding)
-                        .tag(3)
-                    PageView(title: "Get Started", subtitle: "Share, love, cook, and enjoy healthy recipes on plaite 🍽️", buttonTitle: "Finish", selection: $selection, index: 4, total: 5, hasCompletedOnboarding: $hasCompletedOnboarding)
-                        .tag(4)
+            Color.primaryBackground.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Spacer()
+                    Button(action: completeTutorial) {
+                        Text("Skip")
+                            .font(.custom("Montserrat-Medium", size: 16))
+                            .foregroundStyle(.greenText)
+                    }
+                    .padding(.trailing)
+                }
+                .padding(.top, 50)
+
+                Spacer()
+
+                // Tutorial Content
+                TabView(selection: $currentPage) {
+                    ForEach(0..<tutorialPages.count, id: \.self) { index in
+                        TutorialPageView(page: tutorialPages[index])
+                            .tag(index)
+                    }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
-            }
-        }
-        Button {
-            hasCompletedOnboarding.toggle()
-        } label: {
-            Text("Appear")
-                .font(.headline)
-                .foregroundStyle(Color.white)
-                .padding()
-                .background(Color.blue.opacity(0.5))
-                .clipShape(Capsule())
-        }
-    }
-}
+                .frame(maxHeight: .infinity)
 
-private struct PageView: View {
-    @Environment(\.dismiss) private var dismiss
-
-    let title: String
-    let subtitle: String
-    let buttonTitle: String
-    @Binding var selection: Int
-    let index: Int
-    let total: Int
-    @Binding var hasCompletedOnboarding: Bool
-
-    var body: some View {
-        VStack {
-            VStack(spacing: 12) {
-                Text(title)
-                    .font(.custom("Montserrat-Bold", size: 30))
-                    .foregroundStyle(Color.secondaryAccent)
-                    .padding(.top, 20)
-
-                Text(subtitle)
-                    .font(.custom("Montserrat-Medium", size: 24))
-                    .foregroundStyle(.white)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                
-                // Button row
-                Button(action: {
-                    if index == total - 1 {
-                        hasCompletedOnboarding = true
-                    } else {
-                        withAnimation { selection = min(selection + 1, total - 1) }
-                    }
-                }) {
-                    HStack(spacing: 8) {
-                        Text(buttonTitle)
-                            .font(.custom("Montserrat-Semibold", size: 20))
-                        Image(systemName: index == total - 1 ? "checkmark" : "arrow.right")
-                    }
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(
-                        Capsule().fill(Color.secondaryAccent)
-                            .opacity(0.9)
-                    )
-                }
-                .accessibilityLabel(index == total - 1 ? "Finish tutorial" : "Next")
-
-                // Custom page indicator inside the rectangle
+                // Page Indicators
                 HStack(spacing: 8) {
-                    ForEach(0..<total, id: \.self) { dot in
+                    ForEach(0..<tutorialPages.count, id: \.self) { index in
                         Circle()
-                            .fill(dot == selection ? Color.white : Color.white.opacity(0.4))
+                            .fill(currentPage == index ? Color.secondaryAccent : Color.gray.opacity(0.3))
                             .frame(width: 8, height: 8)
                     }
                 }
-                .padding(.vertical, 8)
-            }
-            .padding(20)
-            .background(Color.black.opacity(0.35))
-            .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
-            .overlay(alignment: .topTrailing) {
-                Button(action: { dismiss() }) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .padding(8)
-                        .background(.black.opacity(0.45))
-                        .clipShape(Circle())
-                        .accessibilityLabel("Close tutorial")
+                .padding(.bottom, 30)
+
+                // Navigation Buttons
+                HStack(spacing: 12) {
+                    if currentPage > 0 {
+                        Button(action: goToPreviousPage) {
+                            Text("Back")
+                                .font(.custom("Montserrat-Medium", size: 16))
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.buttonFill)
+                                .foregroundColor(.greenText)
+                                .cornerRadius(12)
+                        }
+                    }
+
+                    Button(action: currentPage == tutorialPages.count - 1 ? completeTutorial : goToNextPage) {
+                        Text(currentPage == tutorialPages.count - 1 ? "Get Started!" : "Next")
+                            .font(.custom("Montserrat-SemiBold", size: 16))
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(LinearGradient(colors: [.secondaryAccent, .accent], startPoint: .leading, endPoint: .trailing))
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                    }
                 }
-                .offset(x: 5, y: -5)
+                .padding(.horizontal)
+                .padding(.bottom, 50)
             }
-            .padding(20)
         }
+        .navigationBarHidden(true)
+    }
+
+    private func goToNextPage() {
+        if currentPage < tutorialPages.count - 1 {
+            currentPage += 1
+        }
+    }
+
+    private func goToPreviousPage() {
+        if currentPage > 0 {
+            currentPage -= 1
+        }
+    }
+
+    private func completeTutorial() {
+        isCompleted = true
+        // Mark tutorial as completed and navigate to main app
+        onTutorialCompleted()
+        dismiss()
+    }
+}
+
+// Tutorial Page Model
+struct TutorialPage {
+    let title: String
+    let subtitle: String
+    let description: String
+    let iconName: String
+    let backgroundColor: Color
+}
+
+// Individual Tutorial Page View
+struct TutorialPageView: View {
+    let page: TutorialPage
+
+    var body: some View {
+        VStack(spacing: 24) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(page.backgroundColor)
+                    .frame(width: 120, height: 120)
+
+                Image(systemName: page.iconName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 50, height: 50)
+                    .foregroundColor(.secondaryAccent)
+            }
+
+            // Content
+            VStack(spacing: 16) {
+                Text(page.title)
+                    .font(.custom("Montserrat-Bold", size: 28))
+                    .foregroundStyle(.mainText)
+                    .multilineTextAlignment(.center)
+
+                Text(page.subtitle)
+                    .font(.custom("Montserrat-Medium", size: 22))
+                    .foregroundStyle(.greenText)
+                    .multilineTextAlignment(.center)
+
+                Text(page.description)
+                    .font(.custom("Montserrat-Regular", size: 18))
+                    .foregroundStyle(.secondaryText)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .padding(.horizontal, 20)
+            }
+        }
+        .padding(.horizontal, 32)
     }
 }
 
 #Preview {
-    TutorialView()
+    TutorialView {
+        print("Tutorial completed!")
+    }
 }
